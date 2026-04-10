@@ -65,3 +65,19 @@ func (w *Writer) Exists() bool {
 	_, err := os.Stat(w.filePath)
 	return err == nil
 }
+
+// FilePath returns the file path associated with this Writer
+func (w *Writer) FilePath() string {
+	return w.filePath
+}
+
+// Delete removes the .env file if it exists
+func (w *Writer) Delete() error {
+	if !w.Exists() {
+		return nil
+	}
+	if err := os.Remove(w.filePath); err != nil {
+		return fmt.Errorf("failed to delete file %s: %w", w.filePath, err)
+	}
+	return nil
+}
