@@ -23,6 +23,19 @@ func (e PlanEntry) String() string {
 	return fmt.Sprintf("%s -> %s", e.VaultPath, e.EnvFile)
 }
 
+// String returns a human-readable summary of the plan, listing all entries.
+func (p Plan) String() string {
+	if len(p.Entries) == 0 {
+		return "(empty plan)"
+	}
+	var sb strings.Builder
+	for _, e := range p.Entries {
+		sb.WriteString(e.String())
+		sb.WriteByte('\n')
+	}
+	return strings.TrimRight(sb.String(), "\n")
+}
+
 // BuildPlan constructs a Plan from a list of Vault secret paths and an optional
 // namespace prefix to strip when deriving local file names.
 //
