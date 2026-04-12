@@ -76,3 +76,26 @@ func TestVersionPrinter_ListerError(t *testing.T) {
 		t.Errorf("unexpected error message: %v", err)
 	}
 }
+
+func TestVersionPrinter_PrintsVersionNumbers(t *testing.T) {
+	now := time.Date(2024, 6, 1, 0, 0, 0, 0, time.UTC)
+	lister := &mockVersionLister{
+		versions: []SecretVersion{
+			{Path: "secret/api", Version: 3, CreatedAt: now, Deleted: false},
+			{Path: "secret/api", Version: 7, CreatedAt: now.Add(24 * time.Hour), Deleted: false},
+		},
+	}
+	var buf bytes.Buffer
+	vp := NewVersionPrinter(&buf)
+	err := vp.Print(context.Background(), lister, "secret", "api")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "v3") {
+		t.Errorf("expected v3 in output, got: %s", out)
+	}
+	if !strings.Contains(out, "v7") {
+		t.Errorf("expected v7 in output, got: %s", out)
+	}
+}
