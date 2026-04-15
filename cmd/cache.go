@@ -57,10 +57,29 @@ var cacheInvalidateCmd = &cobra.Command{
 	},
 }
 
+var cacheClearCmd = &cobra.Command{
+	Use:   "clear",
+	Short: "Remove all entries from the local secret cache",
+	Args:  cobra.NoArgs,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		dir, _ := cmd.Flags().GetString("cache-dir")
+		ttl, _ := cmd.Flags().GetDuration("ttl")
+		c, err := syncp.NewSecretCache(dir, ttl)
+		if err != nil {
+			return err
+		}
+		if err := c.Clear(); err != nil {
+			return fmt.Errorf("clearing cache: %w", err)
+		}
+		fmt.Fprintln(cmd.OutOrStdout(), "cache cleared")
+		return nil
+	},
+}
+
 func init() {
 	defaultCacheDir := os.ExpandEnv("$HOME/.vaultpull/cache")
 
-	for _, sub := range []*cobra.Command{cacheGetCmd, cacheInvalidateCmd} {
+	for _, sub := range []*cobra.Command{cacheGetCmd, cacheInvalidateCmd, cacheClearCmd} {
 		sub.Flags().String("cache-dir", defaultCacheDir, "directory for cached secrets")
 		sub.Flags().Duration("ttl", 5*time.Minute, "cache entry time-to-live")
 		cacheCmd.AddCommand(sub)
