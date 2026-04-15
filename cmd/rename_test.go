@@ -27,12 +27,20 @@ func TestRenameCmd_RequiresOneArg(t *testing.T) {
 	}
 }
 
-func TestRenameCmd_DryRun_PrintsRenamedKeys(t *testing.T) {
+// writeEnvFile is a test helper that creates a temporary .env file with the
+// given content and returns its path.
+func writeEnvFile(t *testing.T, content string) string {
+	t.Helper()
 	dir := t.TempDir()
 	envPath := filepath.Join(dir, ".env")
-	if err := os.WriteFile(envPath, []byte("DB_HOST=localhost\nDB_PORT=5432\n"), 0600); err != nil {
-		t.Fatalf("setup: %v", err)
+	if err := os.WriteFile(envPath, []byte(content), 0600); err != nil {
+		t.Fatalf("setup: write env file: %v", err)
 	}
+	return envPath
+}
+
+func TestRenameCmd_DryRun_PrintsRenamedKeys(t *testing.T) {
+	envPath := writeEnvFile(t, "DB_HOST=localhost\nDB_PORT=5432\n")
 
 	var out bytes.Buffer
 	renameCmd.SetOut(&out)
@@ -55,9 +63,7 @@ func TestRenameCmd_DryRun_PrintsRenamedKeys(t *testing.T) {
 }
 
 func TestRenameCmd_InvalidRuleJSON_ReturnsError(t *testing.T) {
-	dir := t.TempDir()
-	envPath := filepath.Join(dir, ".env")
-	_ = os.WriteFile(envPath, []byte("FOO=bar\n"), 0600)
+	envPath := writeEnvFile(t, "FOO=bar\n")
 
 	renameRulesRaw = []string{`not-json`}
 	t.Cleanup(func() { renameRulesRaw = nil })
