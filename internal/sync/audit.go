@@ -63,6 +63,12 @@ func (a *AuditLog) Record(e AuditEntry) {
 	)
 }
 
+// HasChanges reports whether the entry reflects any mutations
+// (additions, removals, or modifications) to the secret file.
+func (e AuditEntry) HasChanges() bool {
+	return e.Added > 0 || e.Removed > 0 || e.Changed > 0
+}
+
 // EntryFromDiff builds an AuditEntry from a Diff and associated metadata.
 func EntryFromDiff(path, file string, d Diff, err error) AuditEntry {
 	return AuditEntry{
